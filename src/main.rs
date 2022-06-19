@@ -37,12 +37,16 @@ async fn main() {
 
     check_key("packages", &json_data);
     check_key("sources", &json_data);
+    check_key("hostname", &json_data);
+    check_key("osrel", &json_data);
+    check_key("arch", &json_data);
 
     let device = &json_data["device"];
     let architecture = &json_data["arch"];
     let hostname = &json_data["hostname"];
     let packages = &json_data["packages"];
     let sources = &json_data["sources"];
+    let osrel = &json_data["osrel"];
 
     println!("You are going to install Delta GNU/Linux project with this parameters:\n\t- Device: {}\n\t- Arch: {}\n\t- Hostname: {}\n\t- Packages: {}\n\t- Sources: {}", device.as_str().unwrap(), architecture.as_str().unwrap(), hostname.as_str().unwrap(),packages, sources.to_string());
     println!(
@@ -99,7 +103,9 @@ async fn main() {
             .output()
             .expect("Error when updating hostname.");
 
-        std::fs::copy(sources.to_string().replace("\"", ""), format!("{}/etc/apt/sources.list", args.get_str("<destination>"))).expect("Error happened when trying to copy sources file into the new system.");
+        std::fs::copy(sources.to_string().replace("\"", ""), format!("{}/etc/apt/sources.list", args.get_str("<destination>"))).expect("An error happened when trying to copy sources file into the new system.");
+        std::fs::copy(osrel.to_string().replace("\"", ""), format!("{}/etc/os-release", args.get_str("<destination>"))).expect("An error happened when trying to copy os-release file into the new system.");
+
     }
 }
 
