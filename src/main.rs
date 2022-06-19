@@ -42,10 +42,9 @@ async fn main() {
     let architecture = &json_data["arch"];
     let hostname = &json_data["hostname"];
     let packages = &json_data["packages"];
-    let ppa_array = &json_data["ppa_array"];
     let sources = &json_data["sources"];
 
-    println!("You are going to install Delta GNU/Linux project with this parameters:\n\t- Device: {}\n\t- Arch: {}\n\t- Hostname: {}\n\t- Packages: {}\n\t- PPA: {}", device.as_str().unwrap(), architecture.as_str().unwrap(), hostname.as_str().unwrap(),packages, ppa_array.to_string());
+    println!("You are going to install Delta GNU/Linux project with this parameters:\n\t- Device: {}\n\t- Arch: {}\n\t- Hostname: {}\n\t- Packages: {}\n\t- Sources: {}", device.as_str().unwrap(), architecture.as_str().unwrap(), hostname.as_str().unwrap(),packages, sources.to_string());
     println!(
         "Do you accept installing Delta GNU/Linux with this parameters into {} ? (Y/N) ",
         args.get_str("<destination>")
@@ -100,7 +99,7 @@ async fn main() {
             .output()
             .expect("Error when updating hostname.");
 
-        std::fs::copy(sources.to_string(), format!("{}/etc/apt/sources.list", args.get_str("<destination>"))).expect("Error happened when trying to copy sources file into the new system.");
+        std::fs::copy(sources.to_string().replace("\"", ""), format!("{}/etc/apt/sources.list", args.get_str("<destination>"))).expect("Error happened when trying to copy sources file into the new system.");
     }
 }
 
