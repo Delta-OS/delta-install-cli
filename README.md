@@ -1,7 +1,7 @@
 
 # Delta-Install CLI
 
-Delta-Install CLI is our command-line tool to install Delta OS GNU/Linux and to customize it with our choices or even your choices !
+Delta-Install CLI is our command-line tool to install Delta OS GNU/Linux and to customize it with your choices !
 
 
 ## Installation
