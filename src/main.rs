@@ -3,7 +3,8 @@ use online::check;
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
-use std::{fs, io};
+use std::io;
+use std::os::unix::fs;
 extern crate serde_json;
 
 use serde_json::Value;
@@ -30,7 +31,7 @@ async fn main() {
         return println!("Please enter a valid configuration file path... Exiting.");
     }
 
-    let data = fs::read_to_string(config_file_path)
+    let data = std::fs::read_to_string(config_file_path)
         .expect("Error while reading config file. Is file valid ?");
 
     let json_data: Value = serde_json::from_str(&data).unwrap();
@@ -80,9 +81,8 @@ async fn main() {
         assert!(check(None).await.is_ok());
         println!("Starting installation...");
         let command = format!(
-            "{} {} {} {} {}",
+            "{} {} {} {}",
             format!("debootstrap --arch={} --components=main,restricted,universe,multiverse",architecture),
-            format!("--include {}", packages.to_string().replace("[", "").replace("]", "").replace("\"", "")),
             "jammy",
             args.get_str("<destination>"),
             "http://archive.ubuntu.com/ubuntu/"
@@ -96,7 +96,6 @@ async fn main() {
         io::stdout().write_all(&output.stdout).unwrap();
         io::stderr().write_all(&output.stderr).unwrap();
 
-        
         Command::new("sh")
             .arg("-c")
             .arg(format!("echo \"{}\" > {}/etc/hostname", hostname, args.get_str("<destination>")))
@@ -105,7 +104,19 @@ async fn main() {
 
         std::fs::copy(sources.to_string().replace("\"", ""), format!("{}/etc/apt/sources.list", args.get_str("<destination>"))).expect("An error happened when trying to copy sources file into the new system.");
         std::fs::copy(osrel.to_string().replace("\"", ""), format!("{}/etc/os-release", args.get_str("<destination>"))).expect("An error happened when trying to copy os-release file into the new system.");
+        
+        println!("Fin");
+        fs::chroot(args.get_str("<destination>")).expect("Error while chroot");
+        std::env::set_current_dir("/").expect("Error while chroot 2");
 
+        for package in packages.as_array().unwrap() {
+            println!("Installing package");
+            Command::new("sh")
+                .arg("-c")
+                .arg(format!("apt install -y {}", package.to_string().replace('"', "")))
+                .output()
+                .expect("Error while installing package");
+        }
     }
 }
 
